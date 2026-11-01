@@ -4,7 +4,7 @@ thread CPU %, fps, dupes, xruns, temperature. Means over rounds; the spread (min
 import glob, os, re, sys
 from collections import defaultdict
 d, secs = sys.argv[1], float(sys.argv[2])
-SC = ["racer", "shooter", "town", "raster", "loader"]
+SC = ["racer", "shooter", "town", "raster", "loader", "tactics"]
 PH = 600 / (16777216 / 280896)          # quick ROM phase length in s
 runs = defaultdict(list)
 for f in sorted(glob.glob(os.path.join(d, "*-[0-9]*.txt"))):
@@ -31,7 +31,7 @@ for f in sorted(glob.glob(os.path.join(d, "*-[0-9]*.txt"))):
         continue
     per = defaultdict(list)
     for r in rows:
-        per[SC[int(r["t"] // PH) % 5]].append(r.get("core_ms", 0))
+        per[SC[int(r["t"] // PH) % 6]].append(r.get("core_ms", 0))
     runs[name].append({
         "core": sum(r.get("core_ms", 0) for r in rows) / len(rows),
         "cpu": sum(r.get("core_cpu", 0) for r in rows) / len(rows),

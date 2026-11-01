@@ -13,6 +13,6 @@ restore() { $X $D 'c=$(cat /run/gbaint-gc.bak 2>/dev/null); if [ -n "$c" ]; then
 trap restore EXIT
 setgc() { $X $D "grep -q '^game_companion = ' /data/banana/settings.conf && sed -i 's/^game_companion = .*/game_companion = $1/' /data/banana/settings.conf || echo 'game_companion = $1' >> /data/banana/settings.conf"; }
 setgc on
-BF_UI=~/ovn-gba-int/ui/banana-ui MID=~/banana-emu/BananaGBA/banana/mid-comp.sh ~/banana-emu/BananaFront/tools/devrun.sh $D gba "$SO" "$ROM" "$SEC" comp-on 2>&1 | tail -12
+BF_UI=~/ovn-gba-int-deploy/banana-ui MID=~/banana-emu/BananaGBA/banana/mid-comp.sh ~/banana-emu/BananaFront/tools/devrun.sh $D gba "$SO" "$ROM" "$SEC" comp-on 2>&1 | tail -12
 setgc off
-BF_UI=~/ovn-gba-int/ui/banana-ui ~/banana-emu/BananaFront/tools/devrun.sh $D gba "$SO" "$ROM" "$SEC" comp-off 2>&1 | tail -8
+BF_UI=~/ovn-gba-int-deploy/banana-ui ~/banana-emu/BananaFront/tools/devrun.sh $D gba "$SO" "$ROM" "$SEC" comp-off 2>&1 | tail -8
