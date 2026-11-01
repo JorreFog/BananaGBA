@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/banana-stats.h>
 
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/debugger/debugger.h>
@@ -324,6 +325,8 @@ void GBASkipBIOS(struct GBA* gba) {
 	}
 }
 
+struct GBABananaStats gbaBananaStats;
+
 static void GBAProcessEvents(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 
@@ -344,6 +347,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		cpu->nextEvent = nextEvent;
 		if (cpu->halted) {
+			BANANA_STAT(gbaBananaStats.haltCycles += nextEvent - cpu->cycles);
 			cpu->cycles = nextEvent;
 			if (!gba->memory.io[GBA_REG(IME)] || !gba->memory.io[GBA_REG(IE)]) {
 				break;
@@ -579,6 +583,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 }
 
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq, uint32_t cyclesLate) {
+	BANANA_STAT(gbaBananaStats.irqs++);
 	gba->memory.io[GBA_REG(IF)] |= 1 << irq;
 	GBATestIRQ(gba, cyclesLate);
 }

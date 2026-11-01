@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/dma.h>
+#include <mgba/internal/gba/banana-stats.h>
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/gba.h>
@@ -271,6 +272,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
 	int32_t cycles = 2;
 
+	BANANA_STAT(gbaBananaStats.dmaUnits++; if (info->count == info->nextCount) gbaBananaStats.dmaStarts++);
 	gba->cpuBlocked = true;
 	gba->performingDMA = 1 | (number << 1);
 	cpu->memory.accessSource = mACCESS_DMA;

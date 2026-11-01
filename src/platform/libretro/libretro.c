@@ -43,6 +43,10 @@ FS_Archive sdmcArchive;
 #endif
 
 #include "libretro_core_options.h"
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/banana-stats.h>
+#include <mgba/internal/gba/io.h>
+#endif
 
 #define GBA_AUDIO_CHUNK_FRAMES 1024
 #define GB_SAMPLES 512
@@ -1670,6 +1674,31 @@ void retro_run(void) {
    }
 
 	core->runFrame(core);
+#ifdef M_CORE_GBA
+	if (gbaBananaStats.on && core->platform(core) == mPLATFORM_GBA) {
+		/* BananaGBA's workload fingerprint, every 60 frames (BANANAGBA_STATS=1): how busy the GBA's CPU was, IRQs,
+		 * DMA, sprites and the video mode - to compare a stress scene with a real game */
+		static unsigned bf;
+		static uint64_t objSum;
+		struct GBA* gba = core->board;
+		unsigned objs = 0;
+		for (int i = 0; i < 128; ++i) {
+			if ((gba->video.oam.raw[i * 4] & 0x300) != 0x200) {
+				++objs;
+			}
+		}
+		objSum += objs;
+		if (++bf == 60) {
+			uint16_t dispcnt = gba->memory.io[GBA_REG(DISPCNT)];
+			fprintf(stderr, "bananagba stats: busy=%.1f%% irq/f=%.1f dma/f=%.1f dmastarts/f=%.1f objs=%.1f mode=%u bgs=%x\n",
+				100.0 * (1.0 - (double) gbaBananaStats.haltCycles / (60.0 * 280896.0)), gbaBananaStats.irqs / 60.0,
+				gbaBananaStats.dmaUnits / 60.0, gbaBananaStats.dmaStarts / 60.0, objSum / 60.0, dispcnt & 7, (dispcnt >> 8) & 0x1F);
+			gbaBananaStats.haltCycles = gbaBananaStats.irqs = gbaBananaStats.dmaUnits = gbaBananaStats.dmaStarts = 0;
+			objSum = 0;
+			bf = 0;
+		}
+	}
+#endif
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);
 
@@ -2008,6 +2037,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 	mCoreInitConfig(core, NULL);
 	core->init(core);
+	gbaBananaStats.on = getenv("BANANAGBA_STATS") != NULL;
 #ifdef BANANA_THREADED_VIDEO
 	{
 		/* BananaGBA: the GBA's picture drawn by mGBA's thread proxy on another core while the CPU emulation runs
