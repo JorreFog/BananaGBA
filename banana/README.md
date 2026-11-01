@@ -1,8 +1,16 @@
 # BananaGBA: build, test and measure
 
 BananaGBA = libretro's mGBA (7a12d6d, the core BananaOS ships today) + BananaOS changes, as a libretro core for
-BananaFront (and RetroArch, the fallback). Branches: `banana/main` (README), `banana/threaded-video` (mGBA's thread
-proxy in the libretro core).
+BananaFront (and RetroArch, the fallback). Branches: `banana/main` (README), `banana/threaded-video` (everything below).
+
+## What BananaGBA changes (each measured on gbastress, exact: same frame + audio hashes)
+- **Threaded rendering** (`mgba_banana_threaded_video`, default ON in BananaOS's package): mGBA's thread proxy, which
+  the libretro build had compiled out, draws the picture on a second core while the CPU emulation runs.
+- **Workload fingerprint** (`BANANAGBA_STATS=1`): GBA CPU busy %, IRQs, DMA, sprites, video mode every 60 frames on
+  stderr - to calibrate the stress ROM against real games.
+- `LIBRETRO_OPT_LEVEL` (default -O3) for A/Bs; `banana/build.sh` keeps the toolchain's flags (BANANA_CFLAGS adds).
+- Memory maps: unchanged (mGBA's are complete: IWRAM, EWRAM, SRAM, ROM, BIOS, VRAM, palette, OAM, I/O) - BananaFront
+  exports them to the companion (COMPANION-SPEC).
 
 ## Build
 `banana/build.sh <host|plus|rgds> [build-dir] [cmake args]` - through `~/overnight-2026-11-01/buildslot.sh`.
