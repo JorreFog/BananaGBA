@@ -1,3 +1,16 @@
+# BananaGBA
+
+**BananaGBA** is BananaOS's Game Boy Advance emulator: a fork of **mGBA** (https://mgba.io, by Vicki Pfau and
+contributors; this tree is libretro's mGBA fork, https://github.com/libretro/mgba, at 7a12d6d) tuned for the
+Anbernic RG DS and RG DS Plus (RK3566/RK3568: four Cortex-A55 cores sharing 512 KiB of cache, Mali-G52), built as a
+libretro core for BananaFront (BananaOS's own frontend). It also exports the GBA's memory to BananaOS's game
+companion (see `banana/`).
+
+All credit for the emulator goes to mGBA's authors. mGBA's licence (MPL-2.0, `LICENSE`) applies to the whole tree,
+including BananaOS's changes. The Banana-specific notes, build scripts and measurements are in `banana/`.
+
+---
+
 mGBA
 ====
 
