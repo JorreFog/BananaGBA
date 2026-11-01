@@ -320,6 +320,29 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       },
       "Remove Known"
    },
+#ifdef BANANA_THREADED_VIDEO
+#ifndef BANANA_THREADED_VIDEO_DEFAULT
+#define BANANA_THREADED_VIDEO_DEFAULT 0
+#endif
+   {
+      "mgba_banana_threaded_video",
+      "Threaded Rendering (BananaGBA)",
+      NULL,
+      "Draw the picture on a second CPU core while the game runs (mGBA's thread proxy). The same pixels; less work on the emulator's own core, so the clock can stay lower.",
+      NULL,
+      "performance",
+      {
+         { "OFF", NULL },
+         { "ON",  NULL },
+         { NULL, NULL },
+      },
+#if BANANA_THREADED_VIDEO_DEFAULT
+      "ON"
+#else
+      "OFF"
+#endif
+   },
+#endif
    {
       "mgba_frameskip",
       "Frameskip",
