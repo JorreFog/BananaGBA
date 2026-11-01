@@ -8,7 +8,7 @@ DEV=~/bananaos-0.4.3/dev.sh
 dev() { "$DEV" "$D" "$@"; }
 trap 'dev "rm -rf /run/gbapgo"' EXIT
 dev 'mkdir -p /run/gbapgo/sys /run/gbapgo/prof && cat > /run/gbapgo/lrhost && chmod 755 /run/gbapgo/lrhost' < ~/banana-emu/common/lrhost/build-a64/lrhost || exit 1
-dev 'cat > /run/gbapgo/rom.gba' < ~/ovn-gba/tools/test-roms/gbastress-realistic.gba
+dev 'cat > /run/gbapgo/rom.gba' < ${PGO_ROM:-$HOME/ovn-gba/tools/test-roms/gbastress-realistic.gba}
 dev 'cat > /run/gbapgo/core.so' < "$SO"
 dev "cd /run/gbapgo && GCOV_PREFIX=/run/gbapgo/prof GCOV_PREFIX_STRIP=0 nice -n 19 ./lrhost ./core.so rom.gba --frames $N --every 0 --sysdir sys | tail -1"
 dev "cd /run/gbapgo/prof && tar -cf - ." | tar -C / -xvf - 2>/dev/null | grep -c gcda

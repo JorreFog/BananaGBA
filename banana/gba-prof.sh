@@ -13,7 +13,7 @@ cleanup() {
 	dev 'P=$(pidof retroarch); [ -n "$P" ] && kill -TERM $P; sleep 2
 		c=$(cat /run/rastats/core.bak 2>/dev/null); [ -n "$c" ] && sed -i "s/^core\.gba = .*/core.gba = $c/" /data/banana/settings.conf
 		for m in /usr/lib/libretro/'"$CORE"'_libretro.so; do grep -q " $m " /proc/mounts && umount "$m"; done
-		rm -f /data/roms/gba/'"$B"' /data/saves/gba/'"${B%.*}"'.*; grep "^core.gba" /data/banana/settings.conf' 2>&1 | sed 's/^/cleanup: /'
+		rm -f /data/roms/gba/'"$B"' /data/saves/gba/'"${B%.*}"'.*; sed -i "/^mgba_banana_/d" /data/retroarch/config/mGBA/mGBA.opt 2>/dev/null; grep "^core.gba" /data/banana/settings.conf' 2>&1 | sed 's/^/cleanup: /'
 }
 trap cleanup EXIT
 dev 'mkdir -p /run/rastats && cat > /run/rastats/psample && chmod 755 /run/rastats/psample' < ~/p3ds-opt/psample || exit 1
@@ -26,13 +26,13 @@ else
 	dev "cat /usr/lib/libretro/${CORE}_libretro.so" > "$OUT/sym/${CORE}_libretro.so"
 fi
 dev "cat > '/data/roms/gba/$B'" < "$ROM"; sleep 5
-dev "echo '/data/roms/gba/$B' > /run/banana/launch; for i in \$(seq 60); do pidof retroarch >/dev/null && break; sleep 0.5; done; pidof retroarch" || exit 1
-for s in racer shooter town raster loader; do
+dev "for try in 1 2 3 4; do echo '/data/roms/gba/$B' > /run/banana/launch; for i in \$(seq 20); do pidof retroarch >/dev/null && break; sleep 0.5; done; pidof retroarch >/dev/null && break; sleep 5; done; pidof retroarch" || exit 1
+for s in racer shooter town raster loader tactics; do
 	sleep 5
 	dev 'P=$(pidof retroarch); /run/rastats/psample $P 20 300' > "$OUT/$TAG-$s.samples"
 	sleep 5
 done
-for s in racer shooter town raster loader; do
+for s in racer shooter town raster loader tactics; do
 	python3 ~/p3ds-opt/psym.py "$OUT/$TAG-$s.samples" "$OUT/sym" ~/BananaLinux/output/rgds-plus/host/aarch64-buildroot-linux-gnu/sysroot/lib64 > "$OUT/$TAG-$s.prof" 2>/dev/null
 	echo "== $s"; head -${TOPN:-14} "$OUT/$TAG-$s.prof"
 done
