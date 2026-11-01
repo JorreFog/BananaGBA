@@ -172,7 +172,10 @@ static void _unlock(struct mVideoLogger* logger) {
 
 static void _wake(struct mVideoLogger* logger, int y) {
 	struct mVideoThreadProxy* proxyRenderer = (struct mVideoThreadProxy*) logger;
-	if ((y & 15) == 15) {
+#ifndef BANANA_PROXY_WAKE_MASK
+#define BANANA_PROXY_WAKE_MASK 15	/* BananaGBA: lines between wake-ups of the render thread (A/B: 7) */
+#endif
+	if ((y & BANANA_PROXY_WAKE_MASK) == BANANA_PROXY_WAKE_MASK) {
 		ConditionWake(&proxyRenderer->toThreadCond);
 	}
 }
