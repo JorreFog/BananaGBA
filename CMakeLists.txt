@@ -1093,7 +1093,7 @@ if(BUILD_LIBRETRO)
 			set_target_properties(${BINARY_NAME}_libretro PROPERTIES SUFFIX "${LIBRETRO_SUFFIX}.a")
 		endif()
 	else()
-		add_library(${BINARY_NAME}_libretro SHARED ${LIBRETRO_CORE_SRC} ${RETRO_SRC} ${CORE_VFS_SRC})
+		add_library(${BINARY_NAME}_libretro SHARED ${LIBRETRO_CORE_SRC} ${RETRO_SRC} ${CORE_VFS_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/video-logger.c ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/thread-proxy.c ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/proxy.c ${CMAKE_CURRENT_SOURCE_DIR}/src/core/rewind.c)
 		if(NOT APPLE AND NOT WIN32)
 			# Export only the retro_* API, as the make build always did
 			set_property(TARGET ${BINARY_NAME}_libretro APPEND_STRING PROPERTY LINK_FLAGS " -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/link.T")
@@ -1102,7 +1102,7 @@ if(BUILD_LIBRETRO)
 	add_dependencies(${BINARY_NAME}_libretro ${BINARY_NAME}-version-info)
 	# The make-era libretro builds all used the gnu dialect (-std=gnu99) plus
 	# _GNU_SOURCE; newlib toolchains hide POSIX declarations under strict c11
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" C_EXTENSIONS ON COMPILE_DEFINITIONS "__LIBRETRO__;_GNU_SOURCE;${LIBRETRO_COLOR_DEFINES};DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};ENABLE_VFS;ENABLE_DIRECTORIES;MINIMAL_CORE=2;${LIBRETRO_EXTRA_DEFINES}")
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" C_EXTENSIONS ON COMPILE_DEFINITIONS "__LIBRETRO__;_GNU_SOURCE;${LIBRETRO_COLOR_DEFINES};BANANA_THREADED_VIDEO;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};ENABLE_VFS;ENABLE_DIRECTORIES;MINIMAL_CORE=2;${LIBRETRO_EXTRA_DEFINES}")
 	if(LIBRETRO_EXTRA_FLAGS)
 		target_compile_options(${BINARY_NAME}_libretro PRIVATE ${LIBRETRO_EXTRA_FLAGS})
 	endif()

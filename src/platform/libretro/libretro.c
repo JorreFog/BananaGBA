@@ -2008,6 +2008,21 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 	mCoreInitConfig(core, NULL);
 	core->init(core);
+#ifdef BANANA_THREADED_VIDEO
+	{
+		/* BananaGBA: the GBA's picture drawn by mGBA's thread proxy on another core while the CPU emulation runs
+		 * (the same software renderer, so the same pixels); the frame waits for it before it is handed over */
+#ifndef BANANA_THREADED_VIDEO_DEFAULT
+#define BANANA_THREADED_VIDEO_DEFAULT 0
+#endif
+		struct retro_variable tv = { "mgba_banana_threaded_video", NULL };
+		bool on = BANANA_THREADED_VIDEO_DEFAULT;
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &tv) && tv.value) {
+			on = strcmp(tv.value, "ON") == 0;
+		}
+		mCoreConfigSetDefaultIntValue(&core->config, "threadedVideo", on);
+	}
+#endif
 
 #ifdef _3DS
 	outputBuffer = linearMemAlign(VIDEO_BUFF_SIZE, 0x80);

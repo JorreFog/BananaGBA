@@ -25,6 +25,7 @@
 
 const char mVL_MAGIC[] = "mVL\0";
 
+#if !defined(MINIMAL_CORE)  /* BananaGBA: the thread proxy alone in the libretro core (no video log files) */
 static const struct mVLDescriptor {
 	enum mPlatform platform;
 	struct mCore* (*open)(void);
@@ -37,6 +38,7 @@ static const struct mVLDescriptor {
 #endif
 	{ mPLATFORM_NONE, 0 }
 };
+#endif
 
 enum mVLBlockType {
 	mVL_BLOCK_DUMMY = 0,
@@ -519,7 +521,9 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 		vf->seek(vf, 0, SEEK_SET);
 		vf->read(vf, context->initialState, context->initialStateSize);
 		vf->close(vf);
+#if !defined(MINIMAL_CORE)
 		core->startVideoLog(core, context);
+#endif
 	}
 
 	context->activeChannel = 0;
@@ -739,9 +743,11 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 		context->backing->write(context->backing, &header, sizeof(header));
 	}
 
+#if !defined(MINIMAL_CORE)
 	if (core) {
 		core->endVideoLog(core);
 	}
+#endif
 	if (context->initialState) {
 		mappedMemoryFree(context->initialState, context->initialStateSize);
 	}
@@ -1043,6 +1049,7 @@ static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const 
 	return read;
 }
 
+#if !defined(MINIMAL_CORE)
 static const struct mVLDescriptor* _mVideoLogDescriptor(struct VFile* vf) {
 	if (!vf) {
 		return NULL;
@@ -1090,3 +1097,4 @@ struct mCore* mVideoLogCoreFind(struct VFile* vf) {
 	}
 	return core;
 }
+#endif

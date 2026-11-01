@@ -202,7 +202,7 @@ struct GBACore {
 #ifdef BUILD_GLES3
 	struct GBAVideoGLRenderer glRenderer;
 #endif
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 	struct GBAVideoProxyRenderer vlProxy;
 	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
@@ -266,7 +266,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 	gbacore->logContext = NULL;
 #endif
 	gbacore->nMemoryBlocks = 0;
@@ -294,7 +294,7 @@ static bool _GBACoreInit(struct mCore* core) {
 #ifndef DISABLE_THREADING
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 	gbacore->vlProxy.logger = NULL;
 	gbacore->proxyRenderer.logger = NULL;
 #endif
@@ -472,7 +472,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			gbacore->glRenderer.scale = 1;
 		}
 #endif
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 		if (renderer && core->videoLogger) {
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer, core->videoLogger);
 			renderer = &gbacore->proxyRenderer.d;
@@ -483,7 +483,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		}
 	}
 
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 	if (strcmp("threadedVideo.flushScanline", option) == 0) {
 		int flushScanline = -1;
 		mCoreConfigGetIntValue(config, "threadedVideo.flushScanline", &flushScanline);
@@ -762,7 +762,7 @@ static void _GBACoreReset(struct mCore* core) {
 			}
 		}
 #endif
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || defined(BANANA_THREADED_VIDEO)
 		if (renderer && core->videoLogger) {
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer, core->videoLogger);
 			renderer = &gbacore->proxyRenderer.d;
