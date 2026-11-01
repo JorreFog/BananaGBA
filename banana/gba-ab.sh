@@ -36,8 +36,13 @@ for r in $(seq "$ROUNDS"); do
 		dev "grep -q ' /usr/lib/libretro/mgba_libretro.so ' /proc/mounts && umount /usr/lib/libretro/mgba_libretro.so
 			mount --bind /run/rastats/cores/$n.so /usr/lib/libretro/mgba_libretro.so
 			t0=\$(cat /sys/class/thermal/thermal_zone0/temp)
-			echo '/data/roms/gba/$B' > /run/banana/launch
-			for i in \$(seq 60); do P=\$(pidof retroarch) && break; sleep 0.5; done
+			P=
+			for try in 1 2 3 4; do
+				echo '/data/roms/gba/$B' > /run/banana/launch
+				for i in \$(seq 20); do P=\$(pidof retroarch) && break; sleep 0.5; done
+				[ -n \"\$P\" ] && break
+				sleep 5	# (the library reads a new file only on its home screen: a game list or a closing game delays it)
+			done
 			[ -n \"\$P\" ] || { echo 'no game'; exit 1; }
 			f=/sys/devices/system/cpu/cpufreq/policy0; sleep 1; echo $PIN > \$f/scaling_max_freq; echo $PIN > \$f/scaling_min_freq
 			for t in /proc/\$P/task/*; do echo \"\$(cat \$t/comm) \$(cut -d' ' -f14,15 \$t/stat)\"; done > /run/rastats/cpu0
@@ -48,6 +53,7 @@ for r in $(seq "$ROUNDS"); do
 			echo == cpu0; cat /run/rastats/cpu0; echo == cpu1; cat /run/rastats/cpu1; echo == rastats; cat /run/banana/rastats.log
 			cat \$f/cpuinfo_min_freq > \$f/scaling_min_freq; cat \$f/cpuinfo_max_freq > \$f/scaling_max_freq" > "$OUT/$n-$r.txt" 2>&1
 		echo "$n round $r: $(grep -m1 '^temp' "$OUT/$n-$r.txt") $(grep 'rastats total' "$OUT/$n-$r.txt")"
+		grep -q '^no game' "$OUT/$n-$r.txt" && { echo "the game didn't start: stopping the series"; exit 1; }
 	done
 done
 echo "data: $OUT"
