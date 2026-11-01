@@ -1076,8 +1076,9 @@ if(BUILD_LIBRETRO)
 	# Buildroot-style toolchain files blank CMAKE_C_FLAGS_RELEASE and carry
 	# optimization in cached CMAKE_C_FLAGS, which CI's -DCMAKE_C_FLAGS
 	# override discards — leaving -O0. Pin the optimization level.
+	set(LIBRETRO_OPT_LEVEL "-O3" CACHE STRING "BananaGBA: the libretro core's optimization level")
 	if(NOT MSVC)
-		list(APPEND LIBRETRO_EXTRA_FLAGS -O3)
+		list(APPEND LIBRETRO_EXTRA_FLAGS ${LIBRETRO_OPT_LEVEL})
 	endif()
 	# PS2's GS wants BGR555; libretro.c has a matching PS2 special case
 	set(LIBRETRO_COLOR_DEFINES "COLOR_16_BIT;COLOR_5_6_5")
