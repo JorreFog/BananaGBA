@@ -2101,6 +2101,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 	_reloadSettings();
 	core->loadROM(core, rom);
 	deferredSetup = true;
+	/* BananaGBA: the memory maps already at the load (and again after the deferred reset in the first retro_run), so a
+	 * frontend that reads them once the game is loaded (BananaFront's companion export) has IWRAM and the rest */
+	_setupMaps(core);
 
 	const char* sysDir = 0;
 	const char* biosName = 0;
