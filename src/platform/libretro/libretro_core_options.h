@@ -328,15 +328,18 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "mgba_banana_threaded_video",
       "Threaded Rendering (BananaGBA)",
       NULL,
-      "Draw the picture on a second CPU core while the game runs (mGBA's thread proxy). The same pixels; less work on the emulator's own core, so the clock can stay lower.",
+      "Draw the picture on a second CPU core while the game runs (mGBA's thread proxy). The same pixels; the emulator's own core works a quarter less, so the clock can go lower (BananaFront). Auto: on in BananaFront, off in RetroArch.",
       NULL,
       "performance",
       {
+         { "auto", "Auto (BananaFront: on, RetroArch: off)" },
          { "OFF", NULL },
          { "ON",  NULL },
          { NULL, NULL },
       },
-#if BANANA_THREADED_VIDEO_DEFAULT
+#if BANANA_THREADED_VIDEO_DEFAULT == 2
+      "auto"
+#elif BANANA_THREADED_VIDEO_DEFAULT
       "ON"
 #else
       "OFF"

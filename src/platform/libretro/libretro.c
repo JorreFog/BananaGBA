@@ -2048,11 +2048,15 @@ bool retro_load_game(const struct retro_game_info* game) {
 #ifndef BANANA_THREADED_VIDEO_DEFAULT
 #define BANANA_THREADED_VIDEO_DEFAULT 0
 #endif
+		/* "auto" (BANANA_THREADED_VIDEO_DEFAULT 2): on under BananaFront (its launcher exports BANANAFRONT_DATA; there
+		 * the second thread lets the governor run the cluster at half the clock), off under RetroArch (its GBA profile
+		 * holds ~1.45 GHz, where the thread costs total CPU: measured on the RG DS, banana/README.md) */
 		struct retro_variable tv = { "mgba_banana_threaded_video", NULL };
-		bool on = BANANA_THREADED_VIDEO_DEFAULT;
+		int mode = BANANA_THREADED_VIDEO_DEFAULT;
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &tv) && tv.value) {
-			on = strcmp(tv.value, "ON") == 0;
+			mode = strcmp(tv.value, "ON") == 0 ? 1 : strcmp(tv.value, "OFF") == 0 ? 0 : 2;
 		}
+		bool on = mode == 2 ? getenv("BANANAFRONT_DATA") != NULL : mode == 1;
 		mCoreConfigSetDefaultIntValue(&core->config, "threadedVideo", on);
 	}
 #endif
