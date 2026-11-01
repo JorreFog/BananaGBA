@@ -1683,7 +1683,10 @@ void retro_run(void) {
 		struct GBA* gba = core->board;
 		unsigned objs = 0;
 		for (int i = 0; i < 128; ++i) {
-			if ((gba->video.oam.raw[i * 4] & 0x300) != 0x200) {
+			/* on screen: not hidden, and inside the 240x160 picture (games park unused OBJ off-screen) */
+			uint16_t a0 = gba->video.oam.raw[i * 4], a1 = gba->video.oam.raw[i * 4 + 1];
+			unsigned y = a0 & 0xFF, x = a1 & 0x1FF;
+			if ((a0 & 0x300) != 0x200 && (y < 160 || y >= 192) && (x < 240 || x >= 448)) {
 				++objs;
 			}
 		}
