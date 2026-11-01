@@ -1,7 +1,7 @@
 #!/bin/bash
 # gba-ab.sh plus|rgds <secs> <tag> <rounds> name=core.so [name=core.so ...]
 # A/B series of BananaGBA builds on the quick stress ROM through the real menu launcher (RetroArch, rastats.so
-# preloaded), the CPU clock pinned (PIN_KHZ, default 1416000) after each start, A/B/A/B order. Per run: rastats.log,
+# preloaded), the CPU clock pinned (PIN_KHZ, default 1416000; 0 = the user's governor, mean clock recorded) after each start, A/B/A/B order. Per run: rastats.log,
 # the emulator's per-thread CPU (stat delta), SoC temperature before/after. Under locked.sh; < 20 min; leaves nothing.
 set -u
 D=$1 SEC=$2 TAG=$3 ROUNDS=$4; shift 4
@@ -47,9 +47,10 @@ for r in $(seq "$ROUNDS"); do
 				sleep 5	# (the library reads a new file only on its home screen: a game list or a closing game delays it)
 			done
 			[ -n \"\$P\" ] || { echo 'no game'; exit 1; }
-			f=/sys/devices/system/cpu/cpufreq/policy0; sleep 1; echo $PIN > \$f/scaling_max_freq; echo $PIN > \$f/scaling_min_freq
+			f=/sys/devices/system/cpu/cpufreq/policy0; sleep 1; [ $PIN != 0 ] && { echo $PIN > \$f/scaling_max_freq; echo $PIN > \$f/scaling_min_freq; }
 			for t in /proc/\$P/task/*; do echo \"\$(cat \$t/comm) \$(cut -d' ' -f14,15 \$t/stat)\"; done > /run/rastats/cpu0
-			sleep $SEC
+			fs=0; for k in \$(seq $SEC); do sleep 1; fs=\$((fs + \$(cat \$f/scaling_cur_freq))); done
+			echo \"meanfreq \$((fs / $SEC))\"
 			for t in /proc/\$P/task/*; do echo \"\$(cat \$t/comm) \$(cut -d' ' -f14,15 \$t/stat)\"; done > /run/rastats/cpu1
 			echo \"temp \$t0 \$(cat /sys/class/thermal/thermal_zone0/temp) freq \$(cat \$f/scaling_cur_freq)\"
 			kill -TERM \$P; for i in \$(seq 40); do [ -e /run/banana/game.pid ] || break; sleep 0.5; done

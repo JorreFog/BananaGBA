@@ -26,6 +26,7 @@ for f in sorted(glob.glob(os.path.join(d, "*-[0-9]*.txt"))):
     c0, c1 = cpu("cpu0"), cpu("cpu1")
     thr = {k: (c1.get(k, 0) - c0.get(k, 0)) / (secs * 100) * 100 for k in c1}
     tm = re.search(r"^temp (\d+) (\d+) freq (\d+)", txt, re.M)
+    mf = re.search(r"^meanfreq (\d+)", txt, re.M)
     rows = [r for r in rows if r["t"] >= 3]           # warm-up
     if not rows:
         continue
@@ -39,7 +40,7 @@ for f in sorted(glob.glob(os.path.join(d, "*-[0-9]*.txt"))):
         "dupes": sum(r["dupes"] for r in rows), "xruns": sum(r["xruns"] for r in rows),
         "scene": {k: sum(v) / len(v) for k, v in per.items()},
         "main": thr.get("retroarch", 0), "total": sum(thr.values()),
-        "temp": (int(tm.group(1)) / 1000, int(tm.group(2)) / 1000) if tm else (0, 0), "freq": int(tm.group(3)) if tm else 0})
+        "temp": (int(tm.group(1)) / 1000, int(tm.group(2)) / 1000) if tm else (0, 0), "freq": int(mf.group(1)) if mf else (int(tm.group(3)) if tm else 0)})
 # the variants in their series order (variants.txt): the first is the baseline
 order = [l.split()[0] for l in open(os.path.join(d, "variants.txt"))] if os.path.exists(os.path.join(d, "variants.txt")) else list(runs)
 runs = {k: runs[k] for k in order if k in runs}
@@ -56,4 +57,8 @@ for n, rs in runs.items():
           f"{sum(r['fps'] for r in rs) / k:.2f} | {sum(r['main'] for r in rs) / k:.1f} | {sum(r['total'] for r in rs) / k:.1f} | "
           f"{sum(r['dupes'] for r in rs):.0f} | {sum(r['xruns'] for r in rs):.0f} | "
           f"{sum(r['temp'][0] for r in rs) / k:.0f}-{sum(r['temp'][1] for r in rs) / k:.0f} C | {sc} |")
-print(f"\nclock pinned: {', '.join(str(r['freq']) for rs in runs.values() for r in rs)} kHz (scaling_cur_freq at the end)")
+print(f"\nclock (mean over the run when not pinned, kHz): {', '.join(n + ' ' + str(r['freq']) for n, rs in runs.items() for r in rs)}")
+for n, rs in runs.items():
+    k = len(rs)
+    mhz = sum(r['freq'] for r in rs) / k / 1000
+    print(f"{n}: process {sum(r['total'] for r in rs) / k:.1f} % x {mhz:.0f} MHz = {sum(r['total'] for r in rs) / k * mhz / 100:.0f} MHz of work")
