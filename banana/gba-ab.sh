@@ -16,7 +16,7 @@ cleanup() {
 		c=$(cat /run/rastats/core.bak 2>/dev/null); [ -n "$c" ] && sed -i "s/^core\.gba = .*/core.gba = $c/" /data/banana/settings.conf
 		for m in /usr/lib/libretro/mgba_libretro.so /usr/libexec/banana/run-retroarch; do grep -q " $m " /proc/mounts && umount "$m"; done
 		f=/sys/devices/system/cpu/cpufreq/policy0; cat $f/cpuinfo_min_freq > $f/scaling_min_freq; cat $f/cpuinfo_max_freq > $f/scaling_max_freq
-		rm -f "/data/roms/gba/'"$B"'" /data/saves/gba/'"${B%.*}"'.*; rm -rf /run/rastats; grep "^core.gba" /data/banana/settings.conf' 2>&1 | sed 's/^/cleanup: /'
+		rm -f "/data/roms/gba/'"$B"'" /data/saves/gba/'"${B%.*}"'.*; sed -i "/^mgba_banana_/d" /data/retroarch/config/mGBA/mGBA.opt 2>/dev/null; rm -rf /run/rastats; grep "^core.gba" /data/banana/settings.conf' 2>&1 | sed 's/^/cleanup: /'
 }
 trap cleanup EXIT
 dev 'mkdir -p /run/rastats/cores && cat > /run/rastats/rastats.so' < ~/banana-emu/common/rastats/rastats.so || exit 1
@@ -33,7 +33,10 @@ done
 dev "cat > '/data/roms/gba/$B'" < "$ROM"; sleep 5
 for r in $(seq "$ROUNDS"); do
 	for n in "${NAMES[@]}"; do
-		dev "grep -q ' /usr/lib/libretro/mgba_libretro.so ' /proc/mounts && umount /usr/lib/libretro/mgba_libretro.so
+		# (RetroArch saves every core option it saw into mGBA.opt on exit: a variant's own default must not come from the
+		# run before; BananaGBA's options are removed again in cleanup)
+		dev "sed -i '/^mgba_banana_/d' /data/retroarch/config/mGBA/mGBA.opt 2>/dev/null
+			grep -q ' /usr/lib/libretro/mgba_libretro.so ' /proc/mounts && umount /usr/lib/libretro/mgba_libretro.so
 			mount --bind /run/rastats/cores/$n.so /usr/lib/libretro/mgba_libretro.so
 			t0=\$(cat /sys/class/thermal/thermal_zone0/temp)
 			P=

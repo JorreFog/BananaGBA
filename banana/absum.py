@@ -40,6 +40,9 @@ for f in sorted(glob.glob(os.path.join(d, "*-[0-9]*.txt"))):
         "scene": {k: sum(v) / len(v) for k, v in per.items()},
         "main": thr.get("retroarch", 0), "total": sum(thr.values()),
         "temp": (int(tm.group(1)) / 1000, int(tm.group(2)) / 1000) if tm else (0, 0), "freq": int(tm.group(3)) if tm else 0})
+# the variants in their series order (variants.txt): the first is the baseline
+order = [l.split()[0] for l in open(os.path.join(d, "variants.txt"))] if os.path.exists(os.path.join(d, "variants.txt")) else list(runs)
+runs = {k: runs[k] for k in order if k in runs}
 base = None
 print("| variant | runs | core ms/frame | spread | vs first | core cpu ms | fps | RA main thread % | process % | dupes | xruns | temp start-end | " + " | ".join(SC) + " |")
 print("|" + "---|" * (12 + len(SC)))
